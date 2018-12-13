@@ -1,0 +1,55 @@
+#include "yolov3detector.h"
+#include "ui_yolov3detector.h"
+#include <opencv2/opencv.hpp>
+#include <QFileDialog>
+QString message;
+QString ImageFileName;
+
+cv::Mat image1;
+cv::Mat image2;
+cv::Mat image3;
+
+yolov3Detector::yolov3Detector(QWidget *parent) :
+    QMainWindow(parent),
+    ui(new Ui::yolov3Detector)
+{
+    ui->setupUi(this);
+}
+
+yolov3Detector::~yolov3Detector()
+{
+    delete ui;
+}
+
+void yolov3Detector::on_actionOpen_triggered()
+{
+    QString fileName = QFileDialog::getOpenFileName(this,
+        tr("Open Image"), ".",
+        tr("Image Files (*.png *.jpg *.jpeg *.bmp"));
+
+    if(fileName != NULL)
+    {
+        ImageFileName = fileName;      // Save file name for detector function call
+        image1 = cv::imread(fileName.toStdString().data());
+        cv::imshow("test",image1);
+        image2 = image1.clone();
+
+
+        //cv::cvtColor(image2, image3, 4 );  // 4 for original CV_BGR2RGB
+
+        // Resize the image to fit the display screen
+        cv::resize(image2, image2, cv::Size(ui->label->width(), ui->label->height()));
+        cv::imshow("test", image2);
+        // Qt image
+        
+        
+        QImage img = QImage((const uchar*) (image2.data),
+                            image2.cols, image2.rows, QImage::Format_RGB888);
+        img = img.rgbSwapped();
+        // Display on label
+        ui->label->setPixmap((QPixmap::fromImage(img)).scaled(ui->label->width(),ui->label->height(),Qt::KeepAspectRatio));
+
+        message = "<< Image file " + QString::fromUtf8(fileName.toStdString().data()) + " successfully loaded >>";
+
+    }
+}
